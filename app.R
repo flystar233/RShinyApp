@@ -115,7 +115,7 @@ ui <- fluidPage(
                     "排序(Sort)", "筛选(Filter by re)",
                     "筛选(Filter by sql)","云雨图(Raincloud plot)",
                     "时间戳转时间(Timestamp to Date)","相关性检验(Correlation)",
-                    "拐点检测(knee Point plot)"
+                    "拐点检测(knee Point plot)", "内容提换(Replace Content)"
                 ),
                 selected = "交集(intersect)"
             ),
@@ -124,6 +124,9 @@ ui <- fluidPage(
             textAreaInput("data2", "data2", rows = 15, cols = 180),
             textInput("filter", "筛选条件（正则表达式）：", ".*"),
             textInput("filter2", "筛选条件(SQL):", "select * from df"),
+            textAreaInput("replace_template", "内容提换模板(Template)", 
+              value = '"{id}": {\n    "effective_date": "{date}"\n  },', 
+              rows = 5, cols = 80),
         ),
         mainPanel(HTML('<textarea id="ta" class="form-control shiny-text-output"',
                        'style="resize:none;height:500px;" readonly></textarea>'),
@@ -156,6 +159,27 @@ server <- function(input, output, session) {
                 } else {
                     sort(data)
                 }
+            },
+            "内容提换(Replace Content)" = {
+            # data1 每行格式: id,date 或 id  date
+            # 模板格式: "{id}": { "effective_date": "{date}" },
+            template <- input$replace_template
+            lines <- str_split(input$data1, "\n")[[1]]
+            replaced <- sapply(lines, function(line) {
+              # 自动判断分隔符：先尝试逗号，再尝试多个空格
+              if (str_detect(line, ",")) {
+                parts <- str_split(line, ",")[[1]]
+              } else {
+                # 用正则分割多个空格
+                parts <- str_split(str_trim(line), "\\s{2,}|\\s+")[[1]]
+              }
+              if(length(parts) >= 2) {
+                str_replace_all(template, c("\\{id\\}"=parts[1], "\\{date\\}"=parts[2]))
+              } else {
+                ""
+              }
+            })
+            paste(replaced, collapse = "\n")
             },
             "时间戳转时间(Timestamp to Date)" = {
                 timestamp <- as.numeric(data)/1000
