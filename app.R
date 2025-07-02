@@ -115,7 +115,7 @@ ui <- fluidPage(
                     "排序(Sort)", "筛选(Filter by re)",
                     "筛选(Filter by sql)","云雨图(Raincloud plot)",
                     "时间戳转时间(Timestamp to Date)","相关性检验(Correlation)",
-                    "拐点检测(knee Point plot)", "内容提换(Replace Content)"
+                    "拐点检测(knee Point plot)", "内容替换(Replace Content)"
                 ),
                 selected = "交集(intersect)"
             ),
@@ -124,7 +124,7 @@ ui <- fluidPage(
             textAreaInput("data2", "data2", rows = 15, cols = 180),
             textInput("filter", "筛选条件（正则表达式）：", ".*"),
             textInput("filter2", "筛选条件(SQL):", "select * from df"),
-            textAreaInput("replace_template", "内容提换模板(Template)", 
+            textAreaInput("replace_template", "内容替换模板(Template)", 
               value = '"{id}": {\n    "effective_date": "{date}"\n  },', 
               rows = 5, cols = 80),
         ),
@@ -160,7 +160,7 @@ server <- function(input, output, session) {
                     sort(data)
                 }
             },
-            "内容提换(Replace Content)" = {
+            "内容替换(Replace Content)" = {
             # data1 每行格式: id,date 或 id  date
             # 模板格式: "{id}": { "effective_date": "{date}" },
             template <- input$replace_template
